@@ -1,4 +1,4 @@
-# guideline-drift-detector
+# Guideline-Drift-Detector
 An open-source system that automatically detects and explains changes in medical guidelines across versions to prevent outdated clinical practice.
 
 Open Medical Guideline Diff & Drift Detector is an open-source public health intelligence tool designed to automatically track, compare, and explain changes in clinical guidelines released by organizations such as the World Health Organization, National Institute for Health and Care Excellence, and Indian Council of Medical Research.
