@@ -4,3 +4,8 @@ pandas
 numpy
 transformers
 pypdf
+sqlalchemy
+scikit-learn
+pyyaml
+python-multipart
+torch

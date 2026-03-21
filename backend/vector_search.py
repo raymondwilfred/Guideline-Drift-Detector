@@ -1,59 +1,28 @@
-import random
-import logging
-from typing import List
+import numpy as np
 
-logger = logging.getLogger(__name__)
+class VectorSearch:
+    def __init__(self):
+        self.index = []
+        self.metadata = []
+        
+    def add_document(self, embedding, meta):
+        self.index.append(embedding)
+        self.metadata.append(meta)
+        
+    def search(self, query_embedding, top_k=5):
+        if not self.index:
+            return []
+        
+        # Simple cosine similarity
+        similarities = []
+        q_np = np.array(query_embedding).flatten()
+        for i, emb in enumerate(self.index):
+            e_np = np.array(emb).flatten()
+            sim = np.dot(q_np, e_np) / (np.linalg.norm(q_np) * np.linalg.norm(e_np) + 1e-9)
+            similarities.append((float(sim), self.metadata[i]))
+            
+        similarities.sort(key=lambda x: x[0], reverse=True)
+        return similarities[:top_k]
 
-def mock_vector_search(baseline_text: str, updated_text: str) -> List[dict]:
-    """Mocks vector similarity search and identifies semantic drift."""
-    
-    # Example categorized changes relevant to Medical Guidelines
-    change_pool = [
-        {
-            "change_type": "threshold_update",
-            "risk_level": "Critical",
-            "description": "Blood pressure target lowered from 140/90 mmHg to 130/80 mmHg for high-risk patients.",
-            "similarity_score": 0.82
-        },
-        {
-            "change_type": "dosage_change",
-            "risk_level": "Moderate",
-            "description": "Recommended starting dose of Metformin increased to 1000mg per day.",
-            "similarity_score": 0.77
-        },
-        {
-            "change_type": "emerging_disease",
-            "risk_level": "Critical",
-            "description": "New section added detailing guidelines for managing suspected cases of novel respiratory virus XYZ.",
-            "similarity_score": 0.55
-        },
-        {
-            "change_type": "procedural_adjustment",
-            "risk_level": "Minor",
-            "description": "Routine screening age for procedure A decreased from 55 to 50 years.",
-            "similarity_score": 0.88
-        }
-    ]
-    
-    # Mocking actual detection by returning random meaningful changes
-    detected_changes = random.sample(change_pool, k=random.randint(1, 4))
-    return detected_changes
-
-def extract_text_from_pdf(file_path: str) -> str:
-    """Mock extracting text from PDF."""
-    logger.info(f"Extracting text from {file_path}")
-    return "Extracted mock medical text."
-
-def detect_semantic_drift(baseline_path: str, updated_path: str) -> List[dict]:
-    """
-    Core function to detect differences between two documents by:
-    1. Extracting text from PDFs.
-    2. Segmenting and embedding text.
-    3. Running semantic similarity searches to detect drift.
-    """
-    baseline_text = extract_text_from_pdf(baseline_path)
-    updated_text = extract_text_from_pdf(updated_path)
-    
-    changes = mock_vector_search(baseline_text, updated_text)
-    
-    return changes
+# Global instance for basic operations
+vector_db = VectorSearch()

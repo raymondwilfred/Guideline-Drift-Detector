@@ -1,22 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
+from backend.routes import router
+from backend.database import engine, Base
+from backend.models import Guideline, GuidelineVersion, DiffRecord
 
-from routes import router
-from config import settings
-from database import engine, Base
-import models  # Import models so tables are created on startup
-
-# Create backend tables if they don't exist
+# Create tables if not exists
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title=settings.APP_NAME,
-    description="Backend API for Open Medical Guideline Diff & Drift Detector",
+    title="Medical Guideline Diff & Drift Detector API",
+    description="API for tracking and explaining clinical guideline changes.",
     version="1.0.0"
 )
 
-# CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -25,16 +21,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API routes
-app.include_router(router, prefix="/api/v1")
+app.include_router(router, prefix="/api")
 
 @app.get("/")
-def read_root():
-    return {
-        "message": "Welcome to the Open Medical Guideline Diff & Drift Detector API v1.0.0",
-        "status": "Online",
-        "docs_url": "/docs"
-    }
-
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+def root():
+    return {"message": "Welcome to the Medical Guideline Drift Detector API"}

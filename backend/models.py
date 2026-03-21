@@ -1,45 +1,38 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Float
-from datetime import datetime
-from database import Base
-from pydantic import BaseModel
-from typing import List, Optional
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime
+from sqlalchemy.orm import relationship
+from backend.database import Base
 
-# --- SQLAlchemy DB Models ---
-class GuidelineDB(Base):
+class Guideline(Base):
     __tablename__ = "guidelines"
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
-    version = Column(String)
     organization = Column(String)
-    published_date = Column(DateTime, default=datetime.utcnow)
-    file_path = Column(String)
+    disease_category = Column(String)
+    
+    versions = relationship("GuidelineVersion", back_populates="guideline")
 
-class DriftRecordDB(Base):
-    __tablename__ = "drift_records"
+class GuidelineVersion(Base):
+    __tablename__ = "guideline_versions"
 
     id = Column(Integer, primary_key=True, index=True)
-    baseline_id = Column(Integer)
-    updated_id = Column(Integer)
-    change_type = Column(String)  # 'threshold_update', 'dosage_change', 'emerging_disease'
-    risk_level = Column(String)   # 'Critical', 'Moderate', 'Minor'
-    description = Column(Text)
-    similarity_score = Column(Float)
+    guideline_id = Column(Integer, ForeignKey("guidelines.id"))
+    version_label = Column(String)
+    release_date = Column(DateTime)
+    raw_text = Column(Text)
+    
+    guideline = relationship("Guideline", back_populates="versions")
+    diffs_as_old = relationship("DiffRecord", foreign_keys="[DiffRecord.old_version_id]")
+    diffs_as_new = relationship("DiffRecord", foreign_keys="[DiffRecord.new_version_id]")
 
-# --- Pydantic API Schemas ---
-class GuidelineUploadResponse(BaseModel):
-    message: str
-    guideline_id: int
-    title: str
+class DiffRecord(Base):
+    __tablename__ = "diff_records"
 
-class DriftChangeSchema(BaseModel):
-    change_type: str
-    risk_level: str
-    description: str
-    similarity_score: float
-
-class ComparisonResponse(BaseModel):
-    baseline_version: str
-    updated_version: str
-    changes: List[DriftChangeSchema]
-    summary: str
+    id = Column(Integer, primary_key=True, index=True)
+    old_version_id = Column(Integer, ForeignKey("guideline_versions.id"))
+    new_version_id = Column(Integer, ForeignKey("guideline_versions.id"))
+    change_type = Column(String)  # threshold, dosage, screening, emerging
+    risk_level = Column(String)   # Critical, Moderate, Minor
+    explanation = Column(Text)
+    old_text_snippet = Column(Text)
+    new_text_snippet = Column(Text)
