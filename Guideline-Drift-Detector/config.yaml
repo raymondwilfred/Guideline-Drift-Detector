@@ -1,0 +1,19 @@
+app:
+  name: "Medical Guideline Diff & Drift Detector"
+  version: "1.0.0"
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+
+paths:
+  data_dir: "./data"
+  raw_guidelines: "./data/raw"
+  processed_guidelines: "./data/processed"
+
+ai:
+  embedding_model: "all-MiniLM-L6-v2"
+  summarization_model: "sshleifer/distilbart-cnn-12-6"
+
+database:
+  url: "sqlite:///./guidelines.db"
